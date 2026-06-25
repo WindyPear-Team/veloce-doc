@@ -1,77 +1,48 @@
 # Meta Model DSL
 
 ::: warning 专业版功能
-Meta Model（元模型）语言（代码中称 Meta Module DSL）是**仅专业版**提供的领域特定语言，用于定义元模型的路由逻辑。社区版不包含该功能。
+Meta Model DSL，也叫 Meta Module Language，是专业版提供的元模型路由语言。社区版不会注册元模型数据表、管理接口和运行时解析 Hook。
 :::
 
-元模型是一个对外暴露给用户和 API 密钥的**虚拟模型名**。当请求使用该虚拟模型名时，专业版解析器会执行这段语言，选出一个或多个真实上游模型，再把请求交回普通网关路径处理。
+元模型是对外暴露给用户和 API 密钥的虚拟模型名。请求进入网关时，如果 `model` 命中一个启用的元模型，专业版会先执行这段 DSL，把虚拟模型解析成一个真实上游模型，然后继续走普通网关流程。
 
-该语言只描述**选择与编排逻辑**，价格在服务端配置，不在语言里。
+这个语言只负责选择模型，不负责定价、鉴权、网络请求和内容处理。真实调用仍然由网关的渠道、模型、余额、密钥、限流和安全检查接管。
 
 ## 实现状态
 
-当前专业版实现：
+当前实现可保存并执行：
 
-- **已解析**：`call`、`route`、`parallel`、`synthesize`、`judge`、`option`
-- **已执行**：`call`，以及解析到 `call` 的 `route` 分支
-- **尚未执行**：`parallel`、`synthesize`、`judge`
+| Action | 状态 | 说明 |
+| --- | --- | --- |
+| `call` | 可执行 | 直接解析到一个真实模型 |
+| `route` | 可执行 | 按条件从上到下选择第一个匹配分支 |
+| `switch` | 可执行 | 按权重或概率随机选择一个分支 |
+| `parallel` | 预留 | 语法可解析，但保存校验会拒绝 |
+| `judge` | 预留 | 语法可解析，但保存校验会拒绝 |
 
-生产中请使用 `call` 与 `route`。其余形式作为预留语言特性被解析器接受（向前兼容），但运行时执行到它们时会返回错误。
+生产环境只应使用 `call`、`route` 和 `switch`。`parallel`、`judge` 保留给未来编排能力，当前不能保存为可运行元模型。
 
-## 心智模型
+## 运行流程
 
-一个元模型有两部分：
-
-1. **服务端配置**：名称、描述、启用状态、计费模式、可选的元模型价格；
-2. **DSL 主体**：路由/编排逻辑，以及被 `call` / `judge` / `synthesize` 引用的真实模型名。
-
-示例：
-
-```text
-route {
-  when request.input_tokens <= 2000 => call "gpt-4o-mini"
-  when request.input_tokens <= 16000 => call "gpt-4o"
-  otherwise => call "claude-sonnet-4"
-}
-```
-
-若进入的请求目标是 `meta-smart`，这段程序会把请求改写为 `gpt-4o-mini`、`gpt-4o` 或 `claude-sonnet-4` 之一。
-
-## 运行时路径
-
-1. 网关收到 `model` 为元模型名的请求；
-2. 专业版解析器加载启用的元模型；
-3. 校验当前 API 密钥是否被允许使用该元模型名；
-4. 解析并求值 DSL；
-5. 选中的真实模型替换请求中的 model；
-6. 普通网关路由为该真实模型寻找渠道；
-7. 真实模型仍使用该用户的密钥、余额、渠道绑定、分组倍率、渠道路由、安全检查与额度检查。
+1. 客户端请求 `/v1/*` 或 `/v1beta/*`，请求体里的 `model` 是元模型名。
+2. 网关检查该元模型是否存在并启用。
+3. API 密钥的模型白名单先按元模型名校验。
+4. 专业版解析 DSL，并根据请求、用户、密钥上下文计算运行时变量。
+5. DSL 返回一个真实模型名。
+6. 网关把请求目标模型替换为真实模型，继续进行渠道选择。
+7. 真实模型仍受用户渠道绑定、模型启用状态、余额、密钥额度、限流、SSRF 防护、敏感词过滤和用量记录约束。
 
 ::: tip
-元模型不创建独立的凭据或渠道上下文，它解析进的是与普通请求**相同**的 用户/密钥/渠道 管线。
+元模型不会创建独立的用户或渠道上下文。它只在普通网关路由之前做一次模型名解析。
 :::
 
-## 计费
+## 管理入口
 
-计费不属于语言本身。服务支持两种计费模式：
+前端管理页面在系统管理里的元模型区域提供 DSL 编辑器、模板和语法参考。保存前建议先点击校验，或者直接调用校验接口。
 
-- **按实际调用计费（actual）**：用实际选中并调用的真实模型计价；元模型的输入/输出/缓存价被忽略并存为 0；公开目录展示所涉真实模型及其价格，不展示 DSL 内容；
-- **按元模型计费（meta）**：用元模型自身配置的输入/输出/缓存价计价；选中的真实模型仍决定上游渠道与实际调用；公开目录展示元模型价格并列出引用的真实模型。
+管理接口只在专业版注册，并且需要管理员登录态：
 
-两种模式下，网关都会按请求用户与密钥记录用量。元模型计费时日志模型名为元模型名；实际调用计费时为选中的真实模型名。
-
-## 公开模型目录
-
-模型目录可包含启用的元模型。对元模型：
-
-- `is_meta_model` 为 `true`；
-- `meta_billing_mode` 为 `actual` 或 `meta`；
-- `referenced_models` 列出语言用到的真实模型；
-- 不返回 DSL 源码。
-
-## 专业版管理接口
-
-```
+```http
 GET    /api/meta-models
 POST   /api/meta-models
 PUT    /api/meta-models/:id
@@ -79,14 +50,55 @@ DELETE /api/meta-models/:id
 POST   /api/meta-models/validate
 ```
 
-校验接口会解析语言并检查引用的模型，但不会真正发起上游请求。
+创建和更新的请求体字段：
+
+```json
+{
+  "name": "meta-smart",
+  "description": "按上下文和概率选择模型",
+  "dsl": "call \"gpt-4o-mini\"",
+  "billing_mode": "actual",
+  "input_price": "0",
+  "output_price": "0",
+  "cached_input_price": "0",
+  "enabled": true
+}
+```
+
+`POST /api/meta-models/validate` 使用相同字段，但不会写入数据库。成功时返回 `plan`，也就是解析后的 AST。创建和更新成功时返回 `meta_model` 和 `plan`。
+
+## 计费模式
+
+计费不是 DSL 的一部分，由元模型配置字段 `billing_mode` 控制。
+
+| 模式 | 值 | 行为 |
+| --- | --- | --- |
+| 按真实模型计费 | `actual` | 使用最终选中的真实模型价格。元模型自身价格会被保存为 `0`。 |
+| 按元模型计费 | `meta` | 使用元模型自身配置的输入、输出和缓存输入价格。上游调用仍然使用 DSL 选出的真实模型。 |
+
+两种模式都会按当前用户和 API 密钥记录用量。`actual` 模式下日志模型名是实际模型；`meta` 模式下计费模型名是元模型名。
+
+## 公开目录
+
+公开模型目录会合并启用的元模型。元模型条目的关键字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `model_name` | 元模型名 |
+| `provider` | 固定为 `meta` |
+| `provider_name` | 固定为 `Meta Module` |
+| `is_meta_model` | 固定为 `true` |
+| `meta_billing_mode` | `actual` 或 `meta` |
+| `referenced_models` | DSL 引用到的真实模型目录条目 |
+
+公开目录不会返回 DSL 源码。`referenced_models` 是完整的模型目录条目，且不会继续嵌套引用，便于前端展示价格和可用渠道。
 
 ## 语言结构
 
-一个程序由可选的 `option` 声明，后跟**恰好一个** action 组成。
+一个程序由零个或多个 `option` 声明，以及一个根 action 组成。
 
 ```text
-option max_calls = 3
+option audit_label = "balanced-router"
 
 route {
   when request.input_tokens <= 2000 => call "gpt-4o-mini"
@@ -94,46 +106,98 @@ route {
 }
 ```
 
-可用 action：`call`、`route`、`parallel`、`judge`。生产可用：`call`、解析到 `call` 的 `route`。
+当前 `option` 会进入 AST，但运行时尚未使用。建议只把它当作未来扩展或审计标签预留，不要依赖它改变执行结果。
 
-### 注释与分隔符
+### 注释和分隔符
 
-行注释以 `#` 开头。`;` 和 `,` 在解析器接受的位置是可选分隔符。空白（除字符串内）不敏感。
+行注释以 `#` 开头。`;` 和 `,` 在允许的位置是可选分隔符。
+
+```text
+# 优先处理图像请求
+route {
+  when request.has_image == true => call "gpt-4o";
+  otherwise => call "gpt-4o-mini",
+}
+```
 
 ### 字面量
 
-- **字符串**：双引号，支持转义 `\"` `\\` `\n` `\r` `\t`；
-- **数字**：无符号十进制（`2000`、`0.75` 合法；`-1`、`+1`、`1_000` 非法）；
-- **布尔**：小写 `true` / `false`；
-- **标识符**：首字符为字母，可含字母、数字、`_`、`.`（如 `request.input_tokens`）。
+| 类型 | 写法 |
+| --- | --- |
+| string | 双引号字符串，支持 `\"`、`\\`、`\n`、`\r`、`\t` |
+| number | 无符号十进制数，如 `2000`、`0.75`。不支持 `-1`、`+1`、`1_000` |
+| bool | `true` 或 `false` |
+| identifier | 首字符为字母或 `_`，后续可含字母、数字、`_`、`.` |
 
 ## Actions
 
 ### `call`
 
-调用一个真实模型：
+直接选择一个真实模型：
 
 ```text
 call "gpt-4o-mini"
 ```
 
-规则：模型名必须指向已存在的真实模型；元模型不能调用自身；当前实现不能引用另一个元模型。
+规则：
+
+- 模型名必须存在于模型管理里的真实模型。
+- 不能引用自己。
+- 当前不能引用另一个元模型。
 
 ### `route`
 
-选择第一个匹配的分支：
+按条件顺序选择第一个匹配分支：
 
 ```text
 route {
+  when request.has_audio == true => call "gpt-4o-audio"
+  when request.has_image == true => call "gpt-4o"
   when request.input_tokens <= 2000 => call "gpt-4o-mini"
-  when request.input_tokens <= 16000 => call "gpt-4o"
   otherwise => call "claude-sonnet-4"
 }
 ```
 
-规则：分支自上而下求值，第一个为真的 `when` 胜出；`otherwise` 必填、必须最后、且只能有一个。把窄而高优先的条件放前面。
+规则：
 
-### `parallel`（预留）
+- `when` 从上到下求值，第一个结果为 `true` 的分支胜出。
+- `otherwise` 必须存在，且只能有一个。
+- `otherwise` 后面不能再写 `when`。
+- 分支里的 action 可以是 `call`、`route` 或 `switch`。
+
+### `switch`
+
+按权重随机选择分支：
+
+```text
+switch {
+  weight 80 => call "gpt-4o-mini"
+  weight 20 => call "gpt-4o"
+}
+```
+
+`weight`、`chance`、`probability` 是等价关键字，数字含义相同。没有 `otherwise` 时，所有加权分支会按相对权重归一化。上面的例子就是 80% 对 20%。
+
+使用小数概率时，可以用 `otherwise` 承接剩余概率：
+
+```text
+switch {
+  chance 0.9 => call "gpt-4o-mini"
+  otherwise => call "gpt-4o"
+}
+```
+
+这表示 `gpt-4o-mini` 约 90%，`gpt-4o` 约 10%。只有当加权分支总和小于 `1` 时，`otherwise` 才会获得剩余概率。如果权重总和大于或等于 `1`，随机范围按总权重计算，`otherwise` 不会在常规情况下被抽中。
+
+规则：
+
+- 至少需要一个带权重分支。
+- 权重必须是大于 `0` 的数字。
+- `otherwise` 可选，且只能有一个。
+- `otherwise` 后面不能再写带权重分支。
+- 分支里的 action 可以继续嵌套 `call`、`route` 或 `switch`。
+
+### `parallel` 预留
 
 ```text
 parallel {
@@ -142,9 +206,9 @@ parallel {
 } synthesize "gpt-4o-mini"
 ```
 
-解析器接受，块内目前只接受 `call`，至少一个；`synthesize "model"` 可选。**运行时未实现**，执行到会报错。
+解析器能识别这个结构，但保存校验会返回 `parallel meta model execution is not implemented yet`。当前不要在生产配置里使用。
 
-### `judge`（预留）
+### `judge` 预留
 
 ```text
 judge "gpt-4o-mini" {
@@ -158,19 +222,44 @@ judge "gpt-4o-mini" {
 }
 ```
 
-解析器要求 judge 模型字符串与一个 `route` 块，`prompt` 可选。**运行时未实现**，执行到会报错。
+解析器能识别 judge 模型、可选 prompt 和内部 route，但保存校验会返回 `judge meta model execution is not implemented yet`。
 
 ## 表达式
 
-表达式比较一个变量与一个字面量：
+表达式只能比较一个变量和一个字面量：
 
 ```text
 request.input_tokens <= 2000
 request.has_image == true
-api_key.quota_remaining > 1.5
+request.text contains "invoice"
+request.last_user_message matches "(?i)reason|analyze"
 ```
 
-支持运算符：`==` `!=` `<` `<=` `>` `>=`。类型规则：`==`/`!=` 比较同类型；数值运算符要求两侧都是数字；布尔/字符串只能用 `==`/`!=`。**不支持算术**，需要总量时用 `request.total_estimated_tokens`。
+支持的运算符：
+
+| 运算符 | 类型 | 说明 |
+| --- | --- | --- |
+| `==` | string、number、bool | 同类型相等 |
+| `!=` | string、number、bool | 同类型不相等 |
+| `<` | number | 小于 |
+| `<=` | number | 小于等于 |
+| `>` | number | 大于 |
+| `>=` | number | 大于等于 |
+| `contains` | string | 左侧包含右侧 |
+| `not_contains` | string | 左侧不包含右侧 |
+| `starts_with` | string | 左侧以前缀开头 |
+| `ends_with` | string | 左侧以后缀结尾 |
+| `matches` | string | 左侧匹配右侧正则 |
+
+类型规则：
+
+- 数值比较要求两侧都是 number。
+- 字符串运算要求两侧都是 string。
+- 布尔值只能用 `==` 和 `!=`。
+- 不支持算术、括号、`and`、`or`、`not`。
+- `matches` 使用 Go 的正则语法，正则无效时运行会报错。
+
+需要组合多个条件时，优先用多层 `route` 或按顺序拆成多个分支。
 
 ## 运行时变量
 
@@ -178,53 +267,38 @@ api_key.quota_remaining > 1.5
 
 | 变量 | 类型 | 说明 |
 | --- | --- | --- |
-| `request.input_tokens` | number | 原始请求体的估算输入 token 数 |
-| `request.max_output_tokens` | number | 请求的最大输出 token（识别 `max_tokens` / `max_completion_tokens` / `maxOutputTokens`） |
-| `request.total_estimated_tokens` | number | 输入 + 最大输出 |
-| `request.message_count` | number | 检测到的消息/内容/输入项数量 |
-| `request.has_image` | boolean | 请求是否含图像输入 |
-| `request.has_audio` | boolean | 请求是否含音频输入 |
+| `request.input_tokens` | number | 用请求体估算的输入 token 数 |
+| `request.max_output_tokens` | number | 从 `max_tokens`、`max_completion_tokens`、`maxOutputTokens` 读取的最大输出 token |
+| `request.total_estimated_tokens` | number | 输入 token 加最大输出 token |
+| `request.message_count` | number | `messages`、`contents` 或数组形式 `input` 的项目数量 |
+| `request.text` | string | 从 `input`、`messages`、`contents`、`prompt`、`system` 汇总出的文本 |
+| `request.last_user_message` | string | 最后一条 `role=user` 消息文本 |
+| `request.system` | string | 顶层 `system`，或 `role=system/developer` 的系统提示文本 |
+| `request.has_image` | bool | 请求体中是否出现 `image`、`image_url` 或 `images` |
+| `request.has_audio` | bool | 请求体中是否出现 `audio`、`input_audio` 或 `audio_url` |
+| `request.has_tools` | bool | 请求体中是否出现 `tools`、`tool_choice`、`function_call` 或 `functions` |
+| `request.tool_count` | number | `tools` 或 `functions` 数组长度 |
+| `request.stream` | bool | 顶层 `stream` 布尔值 |
+| `request.temperature` | number | 顶层 `temperature` 数值 |
 
-### 用户与密钥变量
+### 用户和密钥变量
 
 | 变量 | 类型 | 说明 |
 | --- | --- | --- |
 | `user.balance` | number | 当前用户余额 |
-| `api_key.quota_remaining` | number | 当前密钥剩余额度；无正额度上限时为 `0` |
+| `user.id` | number | 当前用户 ID |
+| `user.group` | string | 当前用户分组名 |
+| `user.is_admin` | bool | 当前用户是否为管理员 |
+| `api_key.name` | string | 当前 API 密钥名称 |
+| `api_key.quota_limit` | number | 当前 API 密钥额度上限，没有上限时为 `0` |
+| `api_key.quota_remaining` | number | 当前 API 密钥剩余额度，没有正数上限时为 `0` |
 
 ### 预留变量
 
-- `channel.name`（string）：未来渠道感知路由预留，当前在渠道选择前初始化为空串；
-- `judge.output`（string）：未来 `judge` 执行预留，仅在 judge route 内有意义。
-
-## Options
-
-```text
-option max_calls = 3
-option timeout_ms = 45000
-option audit_label = "balanced-router"
-```
-
-当前实现：options 被解析并返回到 AST，但**运行时尚未使用**。未来建议：`max_calls`、`timeout_ms`、`allow_parallel`、`audit_label`，并在其可强制时拒绝未知/越界选项。
-
-## 形式文法
-
-```text
-program          = { option separator } action { separator } ;
-option           = "option" identifier "=" literal ;
-action           = call | route | parallel | judge ;
-call             = "call" string ;
-route            = "route" "{" { when_branch separator } otherwise_branch { separator } "}" ;
-when_branch      = "when" expression "=>" action ;
-otherwise_branch = "otherwise" "=>" action ;
-parallel         = "parallel" "{" call { separator call } { separator } "}" [ "synthesize" string ] ;
-judge            = "judge" string "{" [ "prompt" string separator ] route { separator } "}" ;
-expression       = identifier operator literal ;
-operator         = "==" | "!=" | "<" | "<=" | ">" | ">=" ;
-literal          = string | number | boolean ;
-boolean          = "true" | "false" ;
-separator        = ";" | "," ;
-```
+| 变量 | 类型 | 当前值 |
+| --- | --- | --- |
+| `channel.name` | string | 渠道选择前固定为空字符串 |
+| `judge.output` | string | 未来 `judge` action 使用，当前不可执行 |
 
 ## 完整示例
 
@@ -234,83 +308,174 @@ separator        = ";" | "," ;
 call "gpt-4o-mini"
 ```
 
-### 按 token 路由
+适合把对外模型名和内部真实模型名解耦。
+
+### 按上下文长度路由
 
 ```text
 route {
-  when request.input_tokens <= 2000 => call "gpt-4o-mini"
-  when request.input_tokens <= 16000 => call "gpt-4o"
+  when request.total_estimated_tokens <= 4000 => call "gpt-4o-mini"
+  when request.total_estimated_tokens <= 32000 => call "gpt-4o"
   otherwise => call "claude-sonnet-4"
 }
 ```
 
-### 多模态路由
+### 多模态和工具调用路由
 
 ```text
 route {
   when request.has_audio == true => call "gpt-4o-audio"
   when request.has_image == true => call "gpt-4o"
+  when request.has_tools == true => call "gpt-4o"
   otherwise => call "gpt-4o-mini"
 }
 ```
 
-### 余额感知路由
+### 文本关键词和正则路由
 
 ```text
 route {
-  when user.balance < 1 => call "gpt-4o-mini"
-  when request.input_tokens <= 8000 => call "gpt-4o"
-  otherwise => call "claude-sonnet-4"
+  when request.last_user_message matches "(?i)code|debug|stack trace" => call "claude-sonnet-4"
+  when request.text contains "invoice" => call "gpt-4o"
+  when request.system starts_with "You are a translator" => call "gpt-4o-mini"
+  otherwise => call "gpt-4o-mini"
 }
 ```
 
-### 密钥额度路由
+### 概率 A/B 路由
+
+```text
+switch {
+  weight 95 => call "gpt-4o-mini"
+  weight 5 => call "gpt-4o"
+}
+```
+
+适合灰度强模型、成本实验或新模型小流量验证。
+
+### `route` 嵌套 `switch`
+
+```text
+route {
+  when request.has_image == true => call "gpt-4o"
+  when request.input_tokens > 32000 => call "claude-sonnet-4"
+  otherwise => switch {
+    weight 90 => call "gpt-4o-mini"
+    weight 10 => call "gpt-4o"
+  }
+}
+```
+
+这类写法适合先处理硬约束，再对普通请求做概率分流。
+
+### 额度和余额感知
 
 ```text
 route {
   when api_key.quota_remaining < 0.5 => call "gpt-4o-mini"
+  when user.balance < 1 => call "gpt-4o-mini"
+  when user.group == "enterprise" => call "claude-sonnet-4"
   otherwise => call "gpt-4o"
 }
 ```
 
-## 校验规则
+### 管理员专用强模型
 
-解析器校验语法。专业版服务校验器还检查：
+```text
+route {
+  when user.is_admin == true => call "claude-sonnet-4"
+  otherwise => call "gpt-4o-mini"
+}
+```
 
-- DSL 主体非空；
-- 引用的模型存在；
-- 引用的是真实模型而非元模型；
-- 元模型不能引用自身；
-- `route` 恰好一个 `otherwise`；
-- `otherwise` 不在 `when` 之前；
-- 价格非负；
-- 计费模式合法。
+### 小数概率和兜底
 
-## 安全模型
+```text
+switch {
+  probability 0.70 => call "gpt-4o-mini"
+  probability 0.20 => call "gpt-4o"
+  otherwise => call "claude-sonnet-4"
+}
+```
 
-该语言**不能**：读写文件、访问环境变量、直接发起网络请求、查询数据库、执行 shell、定义循环、定义用户函数、递归调用元模型。
+这里前两个分支合计 `0.90`，`otherwise` 获得剩余约 `0.10`。
 
-所有真实供应商调用仍走完整网关管线：认证、密钥限制、用户渠道绑定、渠道可用性、出站 URL 防护、敏感内容过滤、余额检查、密钥额度检查、用量记录。
+## 保存校验规则
 
-## 密钥与渠道行为
+管理接口保存或校验时会检查：
 
-- 密钥的模型限制**先**按元模型名校验；
-- 元模型解析到真实模型后，渠道选择仍使用当前密钥的用户渠道绑定——绑定到某用户渠道的密钥不会让元模型选到绑定之外的渠道；
-- 解析出的真实模型，当密钥已被允许使用该元模型时，**不会**再次校验其 `allowed_models`。这让管理员可以暴露一个受控的元模型，而不必直接暴露每个底层模型名。
+- DSL 非空。
+- 语法完整，没有未闭合块、非法字符或非法字面量。
+- 根节点必须是一个 action。
+- 引用的模型必须存在。
+- 引用的模型必须是真实模型，不能是另一个元模型。
+- 元模型不能引用自己。
+- `route` 必须有且只有一个 `otherwise`。
+- `route` 的 `otherwise` 后不能再出现 `when`。
+- `switch` 至少有一个带权重分支。
+- `switch` 权重必须大于 `0`。
+- `switch` 不能有重复 `otherwise`。
+- `switch` 的 `otherwise` 后不能再出现带权重分支。
+- `parallel` 和 `judge` 当前会被拒绝，因为运行时未实现。
+- 价格不能为负数。
+- `billing_mode` 只能是 `actual` 或 `meta`，空值会按 `actual` 处理。
 
-## 错误示例
+常见错误：
 
-| 输入 | 错误 |
+| 输入或场景 | 错误 |
 | --- | --- |
-| `route` 缺 `otherwise` | `route requires an otherwise branch` |
-| `call "not-a-real-model"` | `Referenced model not found: not-a-real-model` |
-| 元模型 `meta-smart` 内 `call "meta-smart"` | `Meta model cannot reference itself` |
-| 执行到 `parallel` | `parallel meta model execution is not implemented yet` |
+| 空 DSL | `DSL is required` |
+| `route` 缺少 `otherwise` | `route requires an otherwise branch` |
+| `route` 里 `otherwise` 后继续写 `when` | `when branch cannot follow otherwise` |
+| `switch` 没有权重分支 | `switch requires at least one weighted branch` |
+| `switch` 权重为 `0` | `switch weight must be a positive number` |
+| `call "not-a-model"` | `Referenced model not found: not-a-model` |
+| 元模型 `meta-smart` 内写 `call "meta-smart"` | `Meta model cannot reference itself` |
+| 引用另一个元模型 | `Meta model cannot reference another meta model yet: ...` |
+| 保存 `parallel` | `parallel meta model execution is not implemented yet` |
+| 保存 `judge` | `judge meta model execution is not implemented yet` |
 
-## 推荐编写流程
+## 安全边界
 
-1. 先创建/确认元模型将引用的真实模型；
-2. 创建元模型名（如 `meta-smart`）；
-3. 选择计费模式；
-4. 编写并用 `POST /api/meta-models/validate` 校验 DSL；
-5. 启用后用真实请求验证路由是否符合预期。
+DSL 不能读写文件、读取环境变量、访问网络、查询数据库、执行 shell、定义函数、定义循环或递归调用元模型。它只能读取内置运行时变量，并返回一个真实模型名。
+
+API 密钥行为需要特别注意：
+
+- 密钥的 `allowed_models` 先校验元模型名。
+- 元模型解析到真实模型后，不会再次用该密钥的 `allowed_models` 校验真实模型名。
+- 这样管理员可以只暴露一个受控的元模型名，而不直接暴露所有底层模型名。
+- 真实模型仍必须能通过当前用户的渠道绑定、渠道启用状态、模型启用状态和余额额度检查。
+
+## 推荐工作流
+
+1. 先在模型管理中确认所有真实模型已经存在并启用。
+2. 新建元模型名，例如 `meta-smart`。
+3. 选择计费模式。默认使用 `actual` 更容易和真实模型成本对齐。
+4. 编写 DSL，先用 `POST /api/meta-models/validate` 或前端校验按钮验证。
+5. 保存并启用元模型。
+6. 用普通 API 请求调用该元模型名，查看用量日志和真实上游表现。
+7. 对概率路由做灰度时，先使用小比例权重，并持续观察成本和错误率。
+
+## 形式文法
+
+```text
+program          = { option separator } action { separator } ;
+option           = "option" identifier "=" literal ;
+action           = call | route | switch | parallel | judge ;
+call             = "call" string ;
+route            = "route" "{" { when_branch separator } otherwise_branch { separator } "}" ;
+when_branch      = "when" expression "=>" action ;
+otherwise_branch = "otherwise" "=>" action ;
+switch           = "switch" "{" { switch_branch separator } [ switch_otherwise separator ] "}" ;
+switch_branch    = switch_weight number "=>" action ;
+switch_weight    = "weight" | "chance" | "probability" ;
+switch_otherwise = "otherwise" "=>" action ;
+parallel         = "parallel" "{" call { separator call } { separator } "}" [ "synthesize" string ] ;
+judge            = "judge" string "{" [ "prompt" string separator ] route { separator } "}" ;
+expression       = identifier operator literal ;
+operator         = "==" | "!=" | "<" | "<=" | ">" | ">="
+                 | "contains" | "not_contains" | "starts_with" | "ends_with" | "matches" ;
+literal          = string | number | boolean ;
+boolean          = "true" | "false" ;
+separator        = ";" | "," ;
+```
