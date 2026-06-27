@@ -55,6 +55,7 @@ export default defineConfig({
         {
           text: 'AI 接口',
           items: [
+            { text: 'AI 全路由', link: '/api/ai/' },
             { text: '模型列表', link: '/api/ai/models' },
             { text: 'OpenAI Chat / Completions', link: '/api/ai/openai-chat' },
             { text: 'OpenAI Responses', link: '/api/ai/responses' },
@@ -66,23 +67,48 @@ export default defineConfig({
           ]
         },
         {
-          text: 'AI 路由',
+          text: 'AI 路由：模型',
           items: [
-            { text: 'GET /v1/models', link: '/api/ai/routes/v1-models' },
+            { text: 'GET /v1/models', link: '/api/ai/routes/v1-models' }
+          ]
+        },
+        {
+          text: 'AI 路由：文本',
+          items: [
             { text: 'POST /v1/chat/completions', link: '/api/ai/routes/v1-chat-completions' },
             { text: 'POST /v1/completions', link: '/api/ai/routes/v1-completions' },
-            { text: 'POST /v1/responses', link: '/api/ai/routes/v1-responses' },
+            { text: 'POST /v1/responses', link: '/api/ai/routes/v1-responses' }
+          ]
+        },
+        {
+          text: 'AI 路由：图片',
+          items: [
             { text: 'POST /v1/images/generations', link: '/api/ai/routes/v1-images-generations' },
-            { text: 'POST /v1/images/edits', link: '/api/ai/routes/v1-images-edits' },
-            { text: 'POST /v1/videos/generations', link: '/api/ai/routes/v1-videos-generations' },
+            { text: 'POST /v1/images/edits', link: '/api/ai/routes/v1-images-edits' }
+          ]
+        },
+        {
+          text: 'AI 路由：视频任务',
+          items: [
             { text: 'POST /v1/video/generations', link: '/api/ai/routes/v1-video-generations-post' },
             { text: 'GET /v1/video/generations/:id', link: '/api/ai/routes/v1-video-generations-get' },
-            { text: 'POST /v1/videos/image2video', link: '/api/ai/routes/v1-videos-image2video-post' },
-            { text: 'GET /v1/videos/image2video/:id', link: '/api/ai/routes/v1-videos-image2video-get' },
             { text: 'POST /v1/video/tasks', link: '/api/ai/routes/v1-video-tasks-post' },
             { text: 'GET /v1/video/tasks/:id', link: '/api/ai/routes/v1-video-tasks-get' },
             { text: 'POST /v1/videos/tasks', link: '/api/ai/routes/v1-videos-tasks-post' },
             { text: 'GET /v1/videos/tasks/:id', link: '/api/ai/routes/v1-videos-tasks-get' },
+            { text: 'POST /v1/videos/generations', link: '/api/ai/routes/v1-videos-generations' }
+          ]
+        },
+        {
+          text: 'AI 路由：Kling 兼容',
+          items: [
+            { text: 'POST /v1/videos/image2video', link: '/api/ai/routes/v1-videos-image2video-post' },
+            { text: 'GET /v1/videos/image2video/:id', link: '/api/ai/routes/v1-videos-image2video-get' }
+          ]
+        },
+        {
+          text: 'AI 路由：Claude / Gemini',
+          items: [
             { text: 'POST /v1/messages', link: '/api/ai/routes/v1-messages' },
             { text: 'POST /v1/models/:modelAction', link: '/api/ai/routes/v1-models-model-action' },
             { text: 'POST /v1beta/models/:modelAction', link: '/api/ai/routes/v1beta-models-model-action' }
