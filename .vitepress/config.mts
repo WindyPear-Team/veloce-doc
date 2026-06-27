@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+﻿import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -50,6 +50,54 @@ export default defineConfig({
             { text: 'AI 网关', link: '/api/gateway' },
             { text: '管理员接口', link: '/api/admin' },
             { text: '用户接口', link: '/api/user' }
+          ]
+        },
+        {
+          text: 'AI 接口',
+          items: [
+            { text: '模型列表', link: '/api/ai/models' },
+            { text: 'OpenAI Chat / Completions', link: '/api/ai/openai-chat' },
+            { text: 'OpenAI Responses', link: '/api/ai/responses' },
+            { text: '图片接口', link: '/api/ai/images' },
+            { text: 'OpenAI 风格视频', link: '/api/ai/video-openai' },
+            { text: 'Kling 视频', link: '/api/ai/video-kling' },
+            { text: 'Claude', link: '/api/ai/claude' },
+            { text: 'Gemini', link: '/api/ai/gemini' }
+          ]
+        },
+        {
+          text: 'AI 路由',
+          items: [
+            { text: 'GET /v1/models', link: '/api/ai/routes/v1-models' },
+            { text: 'POST /v1/chat/completions', link: '/api/ai/routes/v1-chat-completions' },
+            { text: 'POST /v1/completions', link: '/api/ai/routes/v1-completions' },
+            { text: 'POST /v1/responses', link: '/api/ai/routes/v1-responses' },
+            { text: 'POST /v1/images/generations', link: '/api/ai/routes/v1-images-generations' },
+            { text: 'POST /v1/images/edits', link: '/api/ai/routes/v1-images-edits' },
+            { text: 'POST /v1/videos/generations', link: '/api/ai/routes/v1-videos-generations' },
+            { text: 'POST /v1/video/generations', link: '/api/ai/routes/v1-video-generations-post' },
+            { text: 'GET /v1/video/generations/:id', link: '/api/ai/routes/v1-video-generations-get' },
+            { text: 'POST /v1/videos/image2video', link: '/api/ai/routes/v1-videos-image2video-post' },
+            { text: 'GET /v1/videos/image2video/:id', link: '/api/ai/routes/v1-videos-image2video-get' },
+            { text: 'POST /v1/video/tasks', link: '/api/ai/routes/v1-video-tasks-post' },
+            { text: 'GET /v1/video/tasks/:id', link: '/api/ai/routes/v1-video-tasks-get' },
+            { text: 'POST /v1/videos/tasks', link: '/api/ai/routes/v1-videos-tasks-post' },
+            { text: 'GET /v1/videos/tasks/:id', link: '/api/ai/routes/v1-videos-tasks-get' },
+            { text: 'POST /v1/messages', link: '/api/ai/routes/v1-messages' },
+            { text: 'POST /v1/models/:modelAction', link: '/api/ai/routes/v1-models-model-action' },
+            { text: 'POST /v1beta/models/:modelAction', link: '/api/ai/routes/v1beta-models-model-action' }
+          ]
+        },
+        {
+          text: '控制台接口',
+          items: [
+            { text: '控制台总览', link: '/api/console/' },
+            { text: '公共控制台接口', link: '/api/console/public' },
+            { text: '认证控制台接口', link: '/api/console/auth' },
+            { text: '用户控制台接口', link: '/api/console/user' },
+            { text: '管理员控制台接口', link: '/api/console/admin' },
+            { text: '高级版控制台接口', link: '/api/console/premium' },
+            { text: '控制台逐路由', link: '/api/console/routes/' }
           ]
         },
         {
@@ -207,3 +255,4 @@ export default defineConfig({
     darkModeSwitchTitle: '切换到深色模式'
   }
 })
+
