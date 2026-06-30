@@ -1,6 +1,11 @@
 # 支付与充值
 
-平台支持在线充值，用户付款后余额自动到账。是否开启由系统设置 `payment_enabled` 控制，支付网关二选一：**易支付（Yipay）** 或 **OpenPayment**。
+平台支持在线充值，用户付款后余额自动到账。是否开启由系统设置控制，支付网关二选一：**易支付（Yipay）** 或 **OpenPayment**。
+
+::: tip
+OpenPayment 规范地址：[OpenPayment 规范地址](https://spec.flweb.cn/open-payment/)
+:::
+
 
 ## 启用支付
 

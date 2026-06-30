@@ -6,7 +6,7 @@
 
 - **Go**：版本以 `go.mod` 为准；
 - **Node.js** 与 **Yarn**（构建前端用，Yarn 4.x）；
-- 运行时默认使用 **SQLite**，无需额外数据库服务。
+- 运行时目前只能使用 **SQLite**，无需额外数据库服务。
 
 ## 从源码构建
 
@@ -18,11 +18,9 @@ yarn install
 yarn build
 ```
 
-前端构建产物会被后端通过 `embed` 内嵌并在运行时作为静态资源提供。
+前端构建产物会被后端内嵌并在运行时作为静态资源提供。
 
 ### 2. 构建后端
-
-构建社区版：
 
 ```bash
 cd community
@@ -36,7 +34,7 @@ go run .
 ```
 
 ::: tip 顺序
-务必**先构建前端再构建后端**，否则内嵌的前端资源会是空的或过期的。
+务必**先构建前端再构建后端**，否则内嵌的前端资源会是空的。
 :::
 
 ## 配置
@@ -69,7 +67,7 @@ BOOTSTRAP_ADMIN_EMAILS=
 ## 运行
 
 ```bash
-./dist/flai-community.exe   # 或 flai-premium.exe
+./dist/flai-community.exe
 ```
 
 启动后访问 `http://localhost:8080`：

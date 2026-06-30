@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "Token Market"
   text: "API 网关与 AI Agent"
-  tagline: 面向 AI 平台与开发者生态的统一计费、鉴权与上游路由网关，内置 Agent
+  tagline: 面向 AI 平台与开发者生态的统一计费、鉴权与上游路由网关，拥有内置 Agent 和代理工作室等高级特性
   actions:
     - theme: brand
       text: 快速开始
@@ -54,5 +54,5 @@ WindyPear Token Market（简称 Token Market）是一个 **AI Token 市场与 AP
 | **贡献者**（参与开发或二次开发） | [系统架构](/develop/architecture) → [本地开发](/develop/local-development) |
 
 ::: tip 社区版
-本文档覆盖 **社区版（Community Edition）** 的全部功能。专业版的高级特性（如 [Meta Model DSL](/develop/meta-model-dsl)）以扩展形式存在，部分章节会单独标注。
+本文档覆盖 **社区版（Community Edition）** 的全部功能。专业版的高级特性以扩展形式存在，部分章节会单独标注。
 :::

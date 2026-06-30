@@ -26,6 +26,7 @@ WindyPear Token Market 是一个面向 AI 平台与开发者生态的 **AI Token
 ## 主要特性一览
 
 - OpenAI 兼容的 API 网关，同时兼容 Claude Messages 与 Gemini 协议；
+- 代理工作室功能，自动安排代理工作；
 - 多上游供应商（渠道）管理；
 - OIDC、Passkey（WebAuthn）、API Key、密码多种认证；
 - 用户余额管理与按密钥额度限制；
