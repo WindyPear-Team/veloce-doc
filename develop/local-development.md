@@ -11,8 +11,8 @@
 ## 获取代码
 
 ```bash
-git clone <repo-url> windypear-api
-cd windypear-api
+git clone <repo-url> veloce
+cd veloce
 git submodule update --init --recursive   # 拉取 community/ 与 web/
 ```
 

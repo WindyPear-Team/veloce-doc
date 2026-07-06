@@ -5,7 +5,7 @@
 ## 仓库总览
 
 ```text
-windypear-api/              专业版（私有）根仓库
+veloce/                    专业版（私有）根仓库
 ├── main.go                 premium.Register() 后启动社区版 app
 ├── go.mod                  module .../flai/premium，replace 指向 ./community
 ├── internal/premium/       专业版私有实现（Meta Model、订阅、安全增强等）

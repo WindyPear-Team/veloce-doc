@@ -21,7 +21,7 @@
 
 ```json
 {
-  "site_name": "Token Market",
+  "site_name": "Veloce",
   "username": "admin",
   "email": "admin@example.com",
   "password": "change-me"

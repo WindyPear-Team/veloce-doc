@@ -1,6 +1,6 @@
 # 项目介绍
 
-WindyPear Token Market 是一个面向 AI 平台与开发者生态的 **AI Token 市场与 API 网关**。它把多个上游 AI 供应商（OpenAI、Claude、Gemini 等）聚合在一个统一的、兼容 OpenAI 的网关之后，并负责处理：
+Veloce 是一个面向 AI 平台与开发者生态的 **AI API 网关与服务市场**。它把多个上游 AI 供应商（OpenAI、Claude、Gemini 等）聚合在一个统一的、兼容 OpenAI 的网关之后，并负责处理：
 
 - **认证**：API Key、OIDC、Passkey、密码登录；
 - **计费**：按 token 精细计费，支持缓存、图像、音频等分项价格与阶梯定价；

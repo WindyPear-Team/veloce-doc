@@ -2,7 +2,7 @@
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'Token Market',
+  title: 'Veloce',
   description: 'API 网关与 AI Agent · 用户文档与开发文档',
   lastUpdated: true,
   cleanUrls: true,
@@ -32,7 +32,7 @@ export default defineConfig({
       {
         text: '相关链接',
         items: [
-          { text: 'GitHub', link: 'https://github.com/WindyPear-Team/token-market-backend' },
+          { text: 'GitHub', link: 'https://github.com/WindyPear-Team/veloce' },
           { text: '专业版', link: '/buy' }
         ]
       }
@@ -259,7 +259,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/WindyPear-Team/token-market-backend' }
+      { icon: 'github', link: 'https://github.com/WindyPear-Team/veloce' }
     ],
 
     footer: {

@@ -1,4 +1,4 @@
-# WindyPear Token Market 文档站点
+# Veloce 文档站点
 
 基于 [VitePress](https://vitepress.dev/) 的项目文档，包含用户文档、管理员手册与开发文档。
 
