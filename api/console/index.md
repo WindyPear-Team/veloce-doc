@@ -20,7 +20,7 @@
 | 登录、注册、Passkey、OIDC | [认证控制台接口](/api/console/auth) |
 | 用户首页、目录、日志、钱包、签到、API Key、设置 | [用户控制台接口](/api/console/user) |
 | 系统设置、渠道、模型、用户、统计 | [管理员控制台接口](/api/console/admin) |
-| 高级版订阅、Meta Model、高级聊天、Agent、Skill | [高级版控制台接口](/api/console/premium) |
+| 高级版订阅、Meta Model、助理聊天、Agent、Skill | [高级版控制台接口](/api/console/premium) |
 
 ## 通用列表响应
 

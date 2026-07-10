@@ -90,7 +90,7 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `session` | object | 会话对象，字段同高级聊天 Session。 |
+| `session` | object | 会话对象，字段同助理聊天 Session。 |
 | `run` | object | Run 对象。 |
 | `run.id` | string | Run ID，可用于查询状态。 |
 | `run.session_id` | string | 会话 ID。 |

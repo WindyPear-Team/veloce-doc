@@ -91,21 +91,21 @@ Path：`id` 为 Meta Model ID。Body 同创建接口。
 
 删除 Meta Model。
 
-## 高级聊天管理设置
+## 助理聊天管理设置
 
 ### GET `/api/advanced-chat/settings`
 
-返回高级聊天管理设置。
+返回助理聊天管理设置。
 
 ### PUT `/api/advanced-chat/settings`
 
-Body 可包含高级聊天启用状态、默认模型、默认系统提示、MCP/连接器策略等设置字段。返回更新后的设置。
+Body 可包含助理聊天启用状态、默认模型、默认系统提示、MCP/连接器策略等设置字段。返回更新后的设置。
 
-## 高级聊天用户设置
+## 助理聊天用户设置
 
 ### GET `/api/user/advanced-chat/settings`
 
-返回用户高级聊天设置、MCP 服务器、默认 Agent/Skill 配置。
+返回用户助理聊天设置、MCP 服务器、默认 Agent/Skill 配置。
 
 ### PUT `/api/user/advanced-chat/mcp-servers`
 
@@ -113,7 +113,7 @@ Body 可包含高级聊天启用状态、默认模型、默认系统提示、MCP
 | --- | --- | --- | --- |
 | `servers` | array | 是 | MCP 服务器列表。 |
 
-## 高级聊天运行
+## 助理聊天运行
 
 ### POST `/api/user/advanced-chat/completions`
 
@@ -152,7 +152,7 @@ Body 可包含高级聊天启用状态、默认模型、默认系统提示、MCP
 | `approved` | boolean | 是 | 是否批准。 |
 | `input` | object | 否 | 调整后的连接器输入。 |
 
-## 高级聊天会话
+## 助理聊天会话
 
 ### GET `/api/user/advanced-chat/sessions`
 

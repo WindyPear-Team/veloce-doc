@@ -29,13 +29,13 @@
 
 ## 返回值
 
-用户高级聊天设置。
+用户助理聊天设置。
 
 ## 返回字段
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `attachment_max_mb` | number | 高级聊天附件大小上限，1 到 100。 |
+| `attachment_max_mb` | number | 助理聊天附件大小上限，1 到 100。 |
 | `attachment_allowed_types` | array | 允许上传的 MIME 类型。 |
 | `builtin_mcp_servers` | array | 管理员内置 MCP 服务器数组。 |
 | `mcp_servers` | array | 用户可用 MCP 服务器数组，用户设置接口返回。 |

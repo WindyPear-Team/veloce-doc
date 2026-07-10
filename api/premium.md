@@ -38,12 +38,12 @@ Authorization: Bearer <jwt>
 | `PUT` | `/api/meta-models/:id` | Path: `id`。 | Meta Model 字段。 | 更新后的 Meta Model。 |
 | `DELETE` | `/api/meta-models/:id` | Path: `id`。 | 无 | 删除成功响应。 |
 
-## 高级聊天管理设置
+## 助理聊天管理设置
 
 | 方法 | 路径 | 参数 | 请求体 | 返回值 |
 | --- | --- | --- | --- | --- |
-| `GET` | `/api/advanced-chat/settings` | 无 | 无 | 高级聊天管理设置。 |
-| `PUT` | `/api/advanced-chat/settings` | 无 | 高级聊天设置字段。 | 更新后的设置。 |
+| `GET` | `/api/advanced-chat/settings` | 无 | 无 | 助理聊天管理设置。 |
+| `PUT` | `/api/advanced-chat/settings` | 无 | 助理聊天设置字段。 | 更新后的设置。 |
 
 ## 用户订阅
 
@@ -60,12 +60,12 @@ Authorization: Bearer <jwt>
 }
 ```
 
-## 高级聊天用户接口
+## 助理聊天用户接口
 
 | 方法 | 路径 | 参数 | 请求体 | 返回值 |
 | --- | --- | --- | --- | --- |
-| `GET` | `/api/user/advanced-chat/settings` | 无 | 无 | 当前用户高级聊天设置。 |
-| `POST` | `/api/user/advanced-chat/completions` | 无 | 高级聊天请求体、消息、工具和会话上下文。 | 运行结果或运行 ID。 |
+| `GET` | `/api/user/advanced-chat/settings` | 无 | 无 | 当前用户助理聊天设置。 |
+| `POST` | `/api/user/advanced-chat/completions` | 无 | 助理聊天请求体、消息、工具和会话上下文。 | 运行结果或运行 ID。 |
 | `GET` | `/api/user/advanced-chat/sessions` | Query: 分页或过滤条件。 | 无 | 会话列表。 |
 | `POST` | `/api/user/advanced-chat/sessions` | 无 | 会话标题、消息、配置等。 | 保存后的会话。 |
 | `GET` | `/api/user/advanced-chat/sessions/:id` | Path: `id`。 | 无 | 会话详情。 |

@@ -45,14 +45,14 @@
 | [认证控制台接口](/api/console/auth) | 登录、注册、Passkey、OIDC。 |
 | [用户控制台接口](/api/console/user) | 用户首页、钱包、签到、API Key、账号设置。 |
 | [管理员控制台接口](/api/console/admin) | 系统设置、渠道、模型、用户、统计。 |
-| [高级版控制台接口](/api/console/premium) | 订阅、兑换码、Meta Model、高级聊天。 |
+| [高级版控制台接口](/api/console/premium) | 订阅、兑换码、Meta Model、助理聊天。 |
 ## 高级版接口
 
 高级版接口通过 route hook 额外挂载，社区版不会注册这些路由。
 
 | 页面 | 内容 |
 | --- | --- |
-| [高级版接口](/api/premium) | 订阅、兑换码、Meta Model、高级聊天、连接器设备、Agent、Skill。 |
+| [高级版接口](/api/premium) | 订阅、兑换码、Meta Model、助理聊天、连接器设备、Agent、Skill。 |
 
 ## 通用响应
 
