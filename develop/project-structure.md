@@ -11,7 +11,7 @@ veloce/                    专业版（私有）根仓库
 ├── internal/premium/       专业版私有实现（Meta Model、订阅、安全增强等）
 ├── community/              社区版（公开，独立 Go 项目，git 子模块）
 │   ├── main.go             社区版入口
-│   ├── go.mod              module github.com/WindyPear-Team/flai
+│   ├── go.mod              module github.com/WindyPear-Team/veloce
 │   ├── internal/           社区版后端
 │   └── web/                前端源码（独立子模块）
 ├── docs/                   文档（含本 VitePress 站点 site/）
