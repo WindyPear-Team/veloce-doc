@@ -22,7 +22,7 @@ yarn build    # tsc -b && vite build
 
 ```bash
 cd community
-go build -buildvcs=false -o ../dist/flai-community.exe .
+go build -buildvcs=false -ldflags "-X github.com/WindyPear-Team/veloce/internal/service.BuildVersion=v0.12.2" -o ../dist/flai-community.exe .
 ```
 
 专业版（根目录，含 `premium.Register()`）：
@@ -31,7 +31,7 @@ go build -buildvcs=false -o ../dist/flai-community.exe .
 go build -buildvcs=false -o dist/flai-premium.exe .
 ```
 
-`-buildvcs=false` 避免在无 VCS 信息或子模块场景下的构建报错。非 Windows 平台去掉 `.exe` 后缀即可。
+`-buildvcs=false` 避免在无 VCS 信息或子模块场景下的构建报错。`BuildVersion` 必须替换为本次 Release 的 tag，自动更新功能依靠它判断是否有新版本；非 Windows 平台去掉 `.exe` 后缀即可。
 
 ## 交叉编译
 
