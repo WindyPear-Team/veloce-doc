@@ -19,6 +19,17 @@
 | `POST` | `/api/payment/openpayment/notify` | 支付平台通知参数。 | 表单或支付平台提交字段。 | 文本成功/失败响应。 |
 | `GET` | `/api/payment/openpayment/submit/:order_no` | Path: `order_no`。 | 无 | HTML 提交页或错误文本。 |
 
+## 官方渠道通知
+
+| 渠道 | 方法 | 路径 | 校验方式 | 成功响应 |
+| --- | --- | --- | --- | --- |
+| 微信支付 API v3 | `POST` | `/api/payment/wechatpay/notify` | 平台证书 RSA 签名 + API v3 AES-GCM 解密 | JSON `{"code":"SUCCESS"}` |
+| 支付宝 | `POST` | `/api/payment/alipay/notify` | 支付宝公钥 RSA2 验签 | `success` |
+| PayPal | `POST` | `/api/payment/paypal/notify` | PayPal `verify-webhook-signature` API | `success` |
+| Stripe | `POST` | `/api/payment/stripe/notify` | `Stripe-Signature` HMAC-SHA256 | `success` |
+
+支付宝、PayPal、Stripe 的浏览器回跳统一到 `/api/payment/<provider>/return`，只跳转回钱包页，绝不以回跳参数作为入账依据。
+
 ## 返回值
 
 通知接口成功时返回支付平台要求的成功文本；失败时返回 `fail` 或错误文本。

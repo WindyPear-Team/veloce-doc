@@ -1,6 +1,6 @@
 # 支付与充值
 
-平台支持在线充值，用户付款后余额自动到账。是否开启由系统设置控制，支付网关二选一：**易支付（Yipay）** 或 **OpenPayment**。
+平台支持在线充值，用户付款后余额自动到账。可选聚合网关 **易支付（Yipay）**、**OpenPayment**，也可直接对接官方渠道：**微信支付 API v3**、**支付宝**、**PayPal** 与 **Stripe**。
 
 ::: tip
 OpenPayment 规范地址：[OpenPayment 规范地址](https://spec.flweb.cn/open-payment/)
@@ -27,6 +27,19 @@ OpenPayment 规范地址：[OpenPayment 规范地址](https://spec.flweb.cn/open
 ::: tip base_url 很重要
 OpenPayment 的回调地址依赖系统设置里的 `base_url`。务必把 `base_url` 设为平台对外可访问的 HTTPS 地址，否则回调无法正确生成。
 :::
+
+## 官方支付渠道
+
+官方渠道只会在对应的后台异步通知验签成功后入账；浏览器回跳不会直接加余额。请将系统 `base_url` 配置成公网可访问的 HTTPS 地址，再在支付平台后台登记下列 webhook 地址。
+
+| 渠道 | 后台配置 | 异步通知地址 | 说明 |
+| --- | --- | --- | --- |
+| 微信支付 | 商户号、AppID、商户证书序列号、商户私钥 PEM、平台证书/公钥 PEM、API v3 密钥 | `/api/payment/wechatpay/notify` | 使用 Native 下单，返回微信扫码链接；结算币种固定为 `CNY`。 |
+| 支付宝 | AppID、应用私钥 PEM、支付宝公钥 PEM、网关地址 | `/api/payment/alipay/notify` | 使用电脑网站支付 `alipay.trade.page.pay` 与 RSA2 验签。 |
+| PayPal | Client ID、Client Secret、Webhook ID、API Base URL | `/api/payment/paypal/notify` | 默认 Base URL 是 Sandbox；生产环境改为 `https://api-m.paypal.com`。 |
+| Stripe | Secret Key、Webhook Signing Secret | `/api/payment/stripe/notify` | 使用 Stripe Checkout；在 Stripe webhook 中订阅 `checkout.session.completed`。 |
+
+PayPal 和 Stripe 可将“官方结算币种”设为 `USD`；微信支付必须使用 `CNY`。创建订单时，系统会固化订单的渠道币种与金额，避免汇率设置改动影响之后的回调校验。
 
 ## 充值流程
 
