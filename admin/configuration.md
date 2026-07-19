@@ -17,6 +17,26 @@
 | `BOOTSTRAP_ADMIN_EMAILS` | 空 | 逗号分隔的邮箱列表，命中者登录后自动成为管理员（不区分大小写）。 |
 | `BOOTSTRAP_ADMIN_OIDC_SUBS` | 空 | 逗号分隔的 OIDC subject 列表，命中者自动成为管理员（区分大小写）。 |
 
+## Redis（可选）
+
+Redis 连接可在后台“系统管理 > 系统设置 > Redis”中保存；保存后的连接在下次服务启动时生效。环境变量会覆盖后台保存的连接，适合容器和托管部署。
+
+| 变量 | 说明 |
+| --- | --- |
+| `REDIS_ENABLED` | `true` 时启用 Redis；未设置时由后台开关决定。 |
+| `REDIS_URL` | Redis URL，例如 `redis://:password@127.0.0.1:6379/0`。设置后优先于下面的单项连接参数。 |
+| `REDIS_ADDR` | 地址，默认 `127.0.0.1:6379`。 |
+| `REDIS_USERNAME` / `REDIS_PASSWORD` | Redis ACL 用户名和密码。 |
+| `REDIS_DB` | 非负整数数据库编号，默认 `0`。 |
+| `REDIS_TLS` | `true` 时使用 TLS。 |
+
+```ini
+REDIS_ENABLED=true
+REDIS_URL=redis://:change-me@127.0.0.1:6379/0
+```
+
+Redis 用于按用户协调并发扣费，并保存已提交余额的镜像；数据库始终是唯一账本。Redis 未启用、连接失败或运行中不可用时，扣费会自动回退到原有的数据库原子更新，不会改为异步落库。
+
 ## 环境判定
 
 以下环境被视为「开发类」，会放宽安全校验（如允许默认 `JWT_SECRET`）：
