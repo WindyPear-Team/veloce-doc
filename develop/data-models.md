@@ -1,6 +1,6 @@
 # 数据模型
 
-后端使用 GORM + SQLite，启动时对所有模型执行 `AutoMigrate`（见 `internal/model/db.go`）。本页按领域归纳核心模型与关键关系。
+后端使用 GORM，支持 SQLite、PostgreSQL 与 MySQL/MariaDB；启动时对所有模型执行 `AutoMigrate`（见 `internal/model/db.go`）。本页按领域归纳核心模型与关键关系。
 
 ## 实体关系概览
 
@@ -19,6 +19,13 @@ Channel ──< ChannelGroupMultiplier >── Group
 ModelConfig ──< ModelGroupMultiplier >── Group
 
 StatusMonitor ──< StatusCheck
+
+PersonalCompany ──< CompanyCharterRevision
+PersonalCompany ──< CompanyObjective ──< CompanyWorkItem ──< CompanyWorkAttempt
+CompanyWorkItem ──< CompanyArtifact / CompanyHandoffPackage / CompanyApprovalRequest
+
+Organization ──< OrganizationMember >── User
+Organization ──< Department / Workspace / Role / EnterpriseTask / QuotaAccount
 ```
 
 ## 账户与认证
@@ -114,6 +121,31 @@ StatusMonitor ──< StatusCheck
 
 记录邀请返佣，关联触发消费与受益邀请人。
 
+## 工作室运营
+
+### PersonalCompany
+
+`PersonalCompany` 是用户拥有的工作室运营边界，不复用企业 `Organization`、成员关系或 RBAC。它关联一个 Agent Studio，并保存当前状态、时区、自主等级、每日/月度预算、余额下限、运行环境和最大并发工作数。
+
+`CompanyCharterRevision` 是不可变的章程版本；当前生效版本由 `PersonalCompany.charter_revision_id` 指向。章程包含使命、目标、数据边界、禁止动作和审批策略。
+
+### 目标、工作与治理
+
+- `CompanyObjective`：工作室目标，含状态、优先级和目标日期；
+- `CompanyWorkItem`：持久化交付承诺，记录验收条件、风险、分配、额度预留与实际消耗；
+- `CompanyWorkAttempt`：一次执行或复核尝试，与工作项分离，以支持重试与恢复而不覆盖原承诺；
+- `CompanyArtifact` / `CompanyHandoffPackage`：工作产物和成员间交接；
+- `CompanyApprovalRequest`：需要所有者决定的审批；
+- `CompanyBudgetLedger` / `CompanyAuditEvent`：预算流水与审计事件。
+
+工作室成员、角色模板、成员版本、能力证据和招聘计划由 `PersonalCompanyEmployee`、`CompanyRoleTemplate`、`CompanyEmployeeVersion`、`CompanyCapabilityEvidence`、`CompanyRecruitmentPlan` 记录。
+
+## 企业模式
+
+企业模式下，一个部署对应一个 `Organization`，用户通过 `OrganizationMember` 加入其中，并拥有个人 `Workspace`。`Department`、`Role`、`RolePermission`、`RoleBinding` 和 `DepartmentRoleBinding` 组成企业 RBAC 与部门授权关系。
+
+`EnterpriseTask` 及其分配、部门关联和共享资源模型保存企业工作协作；`QuotaAccount` 与 `QuotaLedger` 保存组织、成员、任务和资源池范围内的额度流水。
+
 ## 内容与配置
 
 - **StatusMonitor / StatusCheck**：状态监控项与每次探测结果，见 [公告与状态页](/admin/announcements-status)；
@@ -124,4 +156,4 @@ StatusMonitor ──< StatusCheck
 
 - `AutoMigrate` 在启动时自动建表/补列，但**不会删列或破坏性变更**；
 - 引入新缓存价字段时，迁移逻辑会用历史 `input_price` 回填新列（仅首次、当新列不存在时），避免老数据缓存价为 0；
-- 改动模型字段时注意向后兼容，避免影响既有 SQLite 数据。
+- 改动模型字段时注意向后兼容，避免影响既有数据库及跨驱动部署。

@@ -41,7 +41,7 @@ features:
 
 Veloce 是一个 **AI API 网关与服务市场**，用于搭建 AI 平台和开发者生态。它把多个上游 AI 供应商聚合到一个 OpenAI 兼容的网关之后，统一处理认证、计费、额度、路由与用量记录，并提供一套现代化的管理后台。
 
-- 后端使用 **Go**（Gin + GORM + SQLite）编写；
+- 后端使用 **Go**（Gin + GORM，支持 SQLite / PostgreSQL / MySQL）编写；
 - 前端使用 **React 19 + Vite + TypeScript + Tailwind** 编写，构建产物内嵌进后端二进制；
 - 单文件可执行，部署简单。
 

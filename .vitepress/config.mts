@@ -178,6 +178,7 @@ export default defineConfig({
             { text: '调用网关', link: '/guide/calling-the-api' },
             { text: '兼容协议', link: '/guide/protocols' },
             { text: '模型与定价', link: '/guide/models-and-pricing' },
+            { text: '工作室运营', link: '/guide/advanced-chat-studio' },
             { text: '助理聊天计划任务', link: '/guide/advanced-chat-tasks' },
             { text: '托管云沙箱', link: '/guide/advanced-chat-sandboxes' }
           ]
@@ -201,6 +202,7 @@ export default defineConfig({
             { text: '安装部署', link: '/admin/installation' },
             { text: '初始化设置', link: '/admin/initial-setup' },
             { text: '环境变量', link: '/admin/configuration' },
+            { text: '运行模式', link: '/admin/runtime-modes' },
             { text: '运行维护', link: '/admin/operations' }
           ]
         },

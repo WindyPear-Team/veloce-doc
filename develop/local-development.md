@@ -70,7 +70,7 @@ go run .
 
 ## 首次启动
 
-后端起来后访问 `http://localhost:8080`，进入 [初始化设置](/admin/initial-setup) 创建管理员。数据写入 `DB_PATH` 指定的 SQLite 文件。
+后端起来后访问 `http://localhost:8080`，进入 [初始化设置](/admin/initial-setup) 创建管理员。默认数据写入 `DB_PATH` 指定的 SQLite 文件；也可通过 `DB_DRIVER` 和 `DB_DSN` 连接 PostgreSQL 或 MySQL，见[环境变量](/admin/configuration#数据库连接)。
 
 ## 测试
 

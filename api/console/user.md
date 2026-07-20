@@ -233,3 +233,62 @@ Body：浏览器 WebAuthn 注册响应。
 Path：`id` 为 Passkey ID。
 
 返回删除成功响应。
+
+## 工作室运营
+
+工作室运营接口前缀为 `/api/user/personal-company`。每个请求都需要带 `studio_id` 查询参数，用于指定当前用户拥有的工作室；它与企业组织接口相互独立。
+
+### GET `/api/user/personal-company?studio_id=:studio_id`
+
+返回工作室运营面板，包括运营状态、当前章程、目标、工作项、审批、成本与余额保护摘要。首次读取一个已存在的工作室时会建立默认运营记录。
+
+### POST `/api/user/personal-company/bootstrap?studio_id=:studio_id`
+
+显式初始化工作室运营。Body 可包含 `name`、`mission`、`timezone`、`daily_budget`、`monthly_budget`、`balance_floor`、`autonomy_level`、`goals`、`data_boundaries` 与 `prohibited_actions`。金额不能为负数。
+
+### PUT `/api/user/personal-company/charter?studio_id=:studio_id`
+
+创建新的章程版本。Body 包含 `mission`、`goals`、`data_boundaries`、`prohibited_actions` 和 `approval_policy`；结构化字段必须是合法 JSON。
+
+### POST `/api/user/personal-company/pause` / `resume`
+
+暂停或恢复工作室调度。两个接口均需 `studio_id` 查询参数。
+
+### PUT `/api/user/personal-company/runtime?studio_id=:studio_id`
+
+配置工作室执行环境：`connector_device_id`、`connector_workspace_path`、`connector_command_prefixes`，或 `cloud_sandbox_id`。云沙箱与本地连接器/工作目录只能二选一。
+
+### PUT `/api/user/personal-company/scheduler?studio_id=:studio_id`
+
+Body：`{ "max_concurrent_tasks": 1 }`。并发工作数必须在 `1` 到 `8` 之间。
+
+### 工作与审批
+
+`/api/user/personal-company` 下还提供目标、团队、招聘、工作项、交接和审批接口，例如：
+
+- `GET` / `POST` `/objectives`；
+- `GET` / `POST` `/work-items`，以及工作项的 `timeline`、`queue`、`run`、`cancel`、`handoffs` 和 `approve` 子路由；
+- `GET` `/approvals` 与 `POST /approvals/:id/decide`；
+- `POST /connector-approvals/:id/decide`。
+
+这些接口均在相同前缀下并要求 `studio_id`。工作流、预算和审批语义见[工作室运营](/guide/advanced-chat-studio)。
+
+## 托管云沙箱
+
+用户沙箱接口前缀为 `/api/user/advanced-chat`，需要登录 JWT。
+
+### GET `/api/user/advanced-chat/sandbox-hosts/available`
+
+返回当前用户可选择的沙箱主机。
+
+### GET/POST `/api/user/advanced-chat/cloud-sandboxes`
+
+查询或创建自己的云沙箱。创建 Body 包含 `host_id`、`name`、`image`、`cpu_cores`、`memory_mb`、`disk_gb`。资源参数必须符合所选主机的可用范围。
+
+### GET/DELETE `/api/user/advanced-chat/cloud-sandboxes/:id`
+
+查询或删除自己创建的沙箱。删除后不能再新建任务使用该沙箱。
+
+### GET `/api/user/advanced-chat/cloud-sandboxes/:id/charges`
+
+查询该沙箱的运行和存储计费记录。完整的运行与计费说明见[托管云沙箱](/guide/advanced-chat-sandboxes)。

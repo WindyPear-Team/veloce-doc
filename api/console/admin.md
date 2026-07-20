@@ -56,6 +56,26 @@ Body 可包含系统设置字段。常见字段：
 
 返回更新后的系统设置或成功响应。
 
+### POST `/api/settings/export`
+
+导出系统设置、用户渠道、上游渠道、全局模型和渠道模型配置。响应为 JSON 配置备份，可能包含上游 API Key，应作为机密文件保存。
+
+### POST `/api/settings/import`
+
+导入此前导出的配置备份。会覆盖同名配置，但不会删除备份文件中不存在的已有记录；用户、余额、订单和日志不在导入范围内。具体范围和风险见[运行维护](/admin/operations#配置备份与恢复)。
+
+### DELETE `/api/logs`
+
+按当前日志设置清理日志数据库中的记录。
+
+### GET `/api/updates`
+
+返回自动更新器状态，包括当前构建版本和更新配置。
+
+### POST `/api/updates/check`
+
+立即向 Release 源检查是否存在可用更新。仅官方 Release 二进制可用；本地开发构建的版本为 `dev`。详见[自动更新](/admin/operations#自动更新)。
+
 ## 用户渠道
 
 ### GET `/api/user-channels`
@@ -250,3 +270,19 @@ Body：预览项列表或同步应用 payload。返回应用结果。
 ### POST `/api/status-monitors/:id/check`
 
 立即检查一个状态监控。
+
+## 云沙箱主机
+
+这些接口用于管理员维护托管云沙箱的执行主机。主机本身通过连接器身份接入，用户只能选择已启用且在线的主机创建沙箱。
+
+### GET/POST `/api/advanced-chat/sandbox-hosts`
+
+查询或新建沙箱主机。创建时可设置 `name`、`security_policy`、运行时/CPU/内存/存储的小时费率、`runtime_multiplier` 与 `enabled`。创建响应包含主机接入 token，只在创建或轮换时显示。
+
+### PUT `/api/advanced-chat/sandbox-hosts/:id`
+
+更新主机名称、启用状态、安全策略或计费费率。
+
+### POST `/api/advanced-chat/sandbox-hosts/:id/token`
+
+轮换指定沙箱主机的连接 token。

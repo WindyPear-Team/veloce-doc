@@ -6,7 +6,7 @@
 
 - **Go**：版本以 `go.mod` 为准；
 - **Node.js** 与 **Yarn**（构建前端用，Yarn 4.x）；
-- 运行时目前只能使用 **SQLite**，无需额外数据库服务。
+- **SQLite**（默认，无需额外服务）、**PostgreSQL** 或 **MySQL / MariaDB** 三选一作为业务数据库。
 
 ## 从源码构建
 
@@ -48,6 +48,7 @@ cp .env.example .env
 ```ini
 APP_ENV=development        # development / local / test / staging / production
 PORT=8080
+DB_DRIVER=sqlite           # sqlite / postgres / mysql
 DB_PATH=flai.db
 JWT_SECRET=your-secure-jwt-secret-here
 OIDC_ISSUER=https://your-oidc-provider.com
@@ -59,6 +60,18 @@ BOOTSTRAP_ADMIN_EMAILS=
 ```
 
 每一项的含义见 [环境变量](/admin/configuration)。
+
+PostgreSQL 或 MySQL 部署时，设置 `DB_DRIVER` 与 `DB_DSN`；`DATABASE_URL` 可作为 `DB_DSN` 的备用变量。例如：
+
+```ini
+# PostgreSQL
+DB_DRIVER=postgres
+DB_DSN=host=127.0.0.1 user=flai password=change-me dbname=flai port=5432 sslmode=disable
+
+# MySQL / MariaDB
+# DB_DRIVER=mysql
+# DB_DSN=flai:change-me@tcp(127.0.0.1:3306)/flai?charset=utf8mb4&parseTime=True&loc=Local
+```
 
 ::: warning 生产环境
 在非开发环境（`staging` / `production` 等）下，`JWT_SECRET` 必须改为安全的随机值，否则服务会拒绝启动。
@@ -81,4 +94,20 @@ BOOTSTRAP_ADMIN_EMAILS=
 
 ## 数据与备份
 
-默认数据存储在 `DB_PATH` 指向的 SQLite 文件（如 `flai.db`）。定期备份该文件即可备份全部业务数据。迁移到其他机器时连同该文件一起迁移。
+默认数据存储在 `DB_PATH` 指向的 SQLite 文件（如 `flai.db`）。定期备份该文件即可备份全部业务数据。迁移到其他机器时连同该文件一起迁移。PostgreSQL/MySQL 则应使用其各自的备份与恢复机制。
+
+## 从 SQLite 迁移
+
+可用一次性的 `--migrate` 命令把 SQLite 数据复制到新的 PostgreSQL 或 MySQL 数据库。命令只读取 `DB_PATH` 的 SQLite 源文件，不会修改它；目标库必须为空。
+
+```ini
+DB_PATH=flai.db
+DB_DRIVER=postgres
+DB_DSN=host=127.0.0.1 user=flai password=change-me dbname=flai port=5432 sslmode=disable
+```
+
+```bash
+go run . --migrate
+```
+
+完成后移除 `--migrate`，以相同的 `DB_DRIVER` 和 `DB_DSN` 正常启动服务。该迁移是单向复制，不用于合并两个已有数据库；执行前请备份 SQLite 文件，并先在副本和空目标库上验证。

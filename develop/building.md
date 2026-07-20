@@ -75,10 +75,10 @@ go build -buildvcs=false -o dist/flai-linux .
 
 - [ ] 前端已 `yarn build` 且为最新；
 - [ ] 后端编译通过、`go test ./...` 通过；
-- [ ] `.env` / 环境变量在目标环境配置正确（`APP_ENV`、`JWT_SECRET`、`DB_PATH`、OIDC、`base_url`）；
+- [ ] `.env` / 环境变量在目标环境配置正确（`APP_ENV`、`JWT_SECRET`、数据库连接、OIDC、`base_url`）；
 - [ ] 反向代理与 HTTPS、真实客户端 IP 透传就绪；
 - [ ] 支付/状态监控所需的对外回调地址可达；
-- [ ] SQLite 数据文件有备份策略；
+- [ ] 业务数据库有备份策略；
 - [ ] 三个子仓库（community / web / docs）已分别提交、推送，父仓库子模块引用已更新。
 
 ## 子仓库提交
@@ -91,13 +91,13 @@ git add -A; git commit -m "Update community"; git push
 
 ## 文档站点构建
 
-本文档本身是 VitePress 站点（位于 `docs/site/`）：
+本文档本身是 VitePress 站点（位于 `docs/`）：
 
 ```bash
-cd docs/site
+cd docs
 npm install
-npm run docs:dev      # 本地预览
-npm run docs:build    # 构建静态站点到 .vitepress/dist
+npm run dev      # 本地预览
+npm run build    # 构建静态站点到 .vitepress/dist
 ```
 
-> 实际脚本名以 `docs/site/package.json` 为准（`dev` / `build` / `preview`）。
+实际脚本名以 `docs/package.json` 为准（`dev` / `build` / `preview`）。

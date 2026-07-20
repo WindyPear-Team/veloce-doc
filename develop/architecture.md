@@ -21,7 +21,8 @@
 │  │  proxy（路由+转换+计费） auth billing sync status providers │ │
 │  │  hooks（扩展点） content_filter url_guard ...               │ │
 │  ├────────────────────────────────────────────────────────┐ │ │
-│  │ Model 层（GORM）  →  SQLite                               │ │ │
+│  │ Model 层（GORM）  →  SQLite / PostgreSQL / MySQL           │ │ │
+│  │ Redis（可选：扣费协调与余额镜像；非账本）                    │ │ │
 │  └────────────────────────────────────────────────────────┘ │ │
 └──────────────────────────────┬───────────────────────────────┘
                                │ 转发（OpenAI / Claude 协议）
@@ -48,9 +49,9 @@
 `app.Run()` 的顺序（见 `internal/app/app.go`）：
 
 1. `config.Init()` 加载 `.env` / 环境变量；
-2. `model.InitDB()` 打开 SQLite 并 `AutoMigrate` 所有模型；
+2. `model.InitDB()` 按 `DB_DRIVER` 连接 SQLite、PostgreSQL 或 MySQL，并对所有模型执行 `AutoMigrate`；
 3. `service.RunStartupHooks()` 执行注册的启动 Hook（专业版在此初始化订阅、Meta Model 等）；
-4. 构造各 Service（auth、proxy、sync、status、rateLimiter）；
+4. 构造各 Service（auth、proxy、sync、status、rateLimiter），并按配置连接可选 Redis；
 5. 启动后台循环：价格同步循环、状态监控循环；
 6. 初始化 Gin，挂上请求体大小限制中间件；
 7. 加载内嵌前端资源；
